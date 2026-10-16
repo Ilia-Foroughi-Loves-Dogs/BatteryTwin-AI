@@ -1,0 +1,13 @@
+import { ArrowDownLeft, ArrowUpRight, Play, SlidersHorizontal, Info } from 'lucide-react'
+import type { SimulationConfig } from '../lib/demo'
+interface Props { config: SimulationConfig; disabled: boolean; onChange: (config: SimulationConfig) => void; onRun: () => void }
+const fields = [
+  { key: 'current', label: 'Applied current', unit: 'A', min: 0.1, max: 10, step: 0.1 },
+  { key: 'capacity', label: 'Battery capacity', unit: 'Ah', min: 0.1, max: 20, step: 0.1 },
+  { key: 'initialSoc', label: 'Initial state of charge', unit: '%', min: 0, max: 100, step: 1 },
+  { key: 'ambient', label: 'Ambient temperature', unit: '°C', min: -20, max: 60, step: 1 },
+  { key: 'duration', label: 'Simulation duration', unit: 'min', min: 1, max: 180, step: 1 },
+] as const
+export function SimulationControls({ config, disabled, onChange, onRun }: Props) {
+  return <section className="panel controls"><div className="panel-heading"><h2><SlidersHorizontal size={17} />Simulation controls</h2><span className="tiny-label">CONFIGURE</span></div><fieldset disabled={disabled}><label className="field-label">Operating mode</label><div className="mode-toggle"><button className={config.mode === 'discharge' ? 'selected' : ''} onClick={() => onChange({ ...config, mode: 'discharge' })}><ArrowDownLeft size={15} />Discharging</button><button className={config.mode === 'charge' ? 'selected' : ''} onClick={() => onChange({ ...config, mode: 'charge' })}><ArrowUpRight size={15} />Charging</button></div>{fields.map(field => <div className="control-field" key={field.key}><div className="field-top"><label htmlFor={field.key}>{field.label}</label><div className="number-input"><input id={field.key} aria-label={`${field.label} (${field.unit})`} type="number" min={field.min} max={field.max} step={field.step} value={config[field.key]} onChange={event => { const value = event.target.valueAsNumber; if (Number.isFinite(value)) onChange({ ...config, [field.key]: Math.min(field.max, Math.max(field.min, value)) }) }} /><span>{field.unit}</span></div></div><input aria-label={`${field.label} slider`} type="range" min={field.min} max={field.max} step={field.step} value={config[field.key]} style={{ background: `linear-gradient(to right, #69dfb1 ${(config[field.key] - field.min) / (field.max - field.min) * 100}%, #313942 0%)` }} onChange={event => onChange({ ...config, [field.key]: +event.target.value })} /><div className="range-labels"><span>{field.min} {field.unit}</span><span>{field.max} {field.unit}</span></div></div>)}</fieldset><button className="primary run-button" onClick={onRun} disabled={disabled}><Play size={15} fill="currentColor" />Run Simulation</button><p className="control-note"><Info size={13} />Runs illustrative demo playback only.</p></section>
+}
